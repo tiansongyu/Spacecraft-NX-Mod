@@ -255,15 +255,13 @@ const char *ball =
 const char *stage_cleared =
     "*****OOOOO*OOOOO***O****OOOO*OOOOO******\n"
     "*****O*******O****O*O**O*****O**********\n"
-    "*****O*******O***O***O*O*****O**********\n"
     "*****OOOOO***O***O***O*O**OO*OOOO*******\n"
     "*********O***O***OOOOO*O***O*O**********\n"
     "*****OOOOO***O***O***O**OOOO*OOOOO******\n"
     "****************************************\n"
     "*OOOO*O*****OOOOO***O***OOOO*OOOOO*OOOO*\n"
-    "O*****O*****O******O*O**O**O*O*****O***O\n"
-    "O*****O*****O*****O***O*OOOO*O*****O***O\n"
-    "O*****O*****OOOO**O***O*OO***OOOO**O***O\n"
+    "O*****O*****O*****O***O*O**O*O*****O***O\n"
+    "O*****O*****OOOO**O***O*OOO**OOOO**O***O\n"
     "O*****O*****O*****OOOOO*O*O**O*****O***O\n"
     "*OOOO*OOOOO*OOOOO*O***O*O**O*OOOOO*OOOO*\n"
 ;
@@ -271,8 +269,7 @@ const char *stage_cleared =
 const char *update =
     "O***O*OOOO**OOOO****O***OOOOO*OOOOO\n"
     "O***O*O***O*O***O**O*O****O***O****\n"
-    "O***O*OOOO**O***O*O***O***O***O****\n"
-    "O***O*O*****O***O*O***O***O***OOOO*\n"
+    "O***O*OOOO**O***O*O***O***O***OOOO*\n"
     "O***O*O*****O***O*OOOOO***O***O****\n"
     "*OOO**O*****OOOO**O***O***O***OOOOO\n"
 ;
@@ -373,7 +370,7 @@ int main(void) {
     uint8_t modchip_buf[512];
 
     nx_hwinit();
-    sdmmc_init(&emmc_sdmmc, SDMMC_4, SDMMC_VOLTAGE_1V8, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_MMC_INIT);
+    sdmmc_init(&emmc_sdmmc, SDMMC_4, SDMMC_VOLTAGE_1V8, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_MMC_IDENT);
 
     if (!mount_sd())
         ret = -1;
@@ -394,7 +391,11 @@ int main(void) {
     FILINFO info;
     uint32_t new_version = 0;
     UINT br = 0;
-    if (ret != 0 || f_open(&f, "firmware.bin", FA_READ) != FR_OK || f_lseek(&f, 0x150) != FR_OK || f_read(&f, &new_version, 4, &br) != FR_OK || (new_version <= *(uint32_t *) &modchip_buf[1] && f_stat(".force_update", &info) != FR_OK))
+    if (ret != 0
+     || f_open(&f, "firmware.bin", FA_READ) != FR_OK
+     || f_lseek(&f, 0x150) != FR_OK
+     || f_read(&f, &new_version, 4, &br) != FR_OK
+     || (new_version <= *(uint32_t *) &modchip_buf[1] && f_stat(".force_update", &info) != FR_OK))
     {
         modchip_buf[0] = 0x55;
         modchip_send(&emmc_sdmmc, modchip_buf);
@@ -454,7 +455,7 @@ int main(void) {
                 mdelay(45);
             }
 
-            draw_table(stage_cleared, 50, 150, 30);
+            draw_table(stage_cleared, 50, 180, 30);
             
             mdelay(3000);
 
