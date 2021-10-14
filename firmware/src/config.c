@@ -27,7 +27,8 @@ void config_clear(config *cfg)
 
 uint32_t config_load(config *cfg)
 {
-	memcpy(cfg, (const void *)0x801FC00, sizeof(config));
+	const void* volatile ptr = (const void *)0x801FC00;
+	memcpy(cfg, ptr, sizeof(config));
 	if (cfg->magic != 0x01584E53)
 	{
 		config_clear(cfg);

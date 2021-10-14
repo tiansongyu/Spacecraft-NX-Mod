@@ -2,3 +2,4 @@ build
 *.elf
 *.bin
 *.a
+*.DS_Store

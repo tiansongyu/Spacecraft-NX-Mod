@@ -18,7 +18,7 @@ If the payload is updated to support patched erista or/and mariko chips: yes
 If the payload is only RCM compatible: you need to ask the developer for update.
 
 ## I love this! How can i install it?
-For now you can't flash Spacecraft-NX without pluging in your modchip into your pc.
+For now you can't flash Spacecraft-NX without pluging in your modchip into your pc for the first time.
 * Plug in your USB dongle into the modchip.
 * Plug in your micro-usb cable into the dongle.
 * Plug in the other end of the cable to your Windows PC. (Linux support is work in progress. Feel free to send in a PR for OS X)
@@ -29,6 +29,12 @@ For now you can't flash Spacecraft-NX without pluging in your modchip into your 
 * Copy the payload into the root of the sdcard and rename it to `payload.bin`
 * On the first boot up your chip will enter into a training session, blinking yellow. This may take up to 30 minutes. (Recommended to plug in a charger)
 * After the initial training the chip will blink magenta and turn green upon successful boot up.
+
+### Update Firmware
+
+If you have flashed Spacecraft-NX, you could update the firmware (and its sdloader) simply by placing `firmware.bin` at the root of your SD card.
+
+To reflash the firmware regardless of firmware version, just create a file called `.force_update`. (Windows users might find it hard to create dot files, you could grab one in the repo.)
 
 ## HELP! I got `Spacecraft-NX DFU not found!` message. 
 Don't worry. Windows still installing the drivers.
