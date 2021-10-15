@@ -3,3 +3,4 @@ build
 *.bin
 *.a
 *.DS_Store
+!firmware.bin

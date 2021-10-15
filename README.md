@@ -1,6 +1,15 @@
-# Spacecraft-NX
+# Spacecraft-NX-MOD
+
+[Latest modded firmware.bin](https://github.com/KazushiMe/Spacecraft-NX/raw/master/firmware/firmware.bin)
+
+## How to update firmware w/o taking it apart
+
+If you have flashed Spacecraft-NX, you could update the firmware (and its sdloader) simply by placing `firmware.bin` at the root of your SD card.
+
+To reflash/downgrade the firmware regardless of firmware version, create a file called `.force_update`. (Windows users might find it hard to create dot files, you could grab one in the repo.)
 
 ## What is this?
+
 A fully opensource SX Core / Lite compatible firmware that lets you play a Space Invaders inspired mini-game and load any payload you like.
 
 ## Does it allow me to do piracy?
@@ -29,12 +38,6 @@ For now you can't flash Spacecraft-NX without pluging in your modchip into your 
 * Copy the payload into the root of the sdcard and rename it to `payload.bin`
 * On the first boot up your chip will enter into a training session, blinking yellow. This may take up to 30 minutes. (Recommended to plug in a charger)
 * After the initial training the chip will blink magenta and turn green upon successful boot up.
-
-### Update Firmware
-
-If you have flashed Spacecraft-NX, you could update the firmware (and its sdloader) simply by placing `firmware.bin` at the root of your SD card.
-
-To reflash the firmware regardless of firmware version, just create a file called `.force_update`. (Windows users might find it hard to create dot files, you could grab one in the repo.)
 
 ## HELP! I got `Spacecraft-NX DFU not found!` message. 
 Don't worry. Windows still installing the drivers.
