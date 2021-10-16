@@ -1,6 +1,9 @@
 # Spacecraft-NX-MOD
 
-[Latest modded firmware.bin](https://github.com/KazushiMe/Spacecraft-NX/raw/master/firmware/firmware.bin)
+[Latest modded firmware.bin (v3)](https://github.com/KazushiMe/Spacecraft-NX/raw/master/firmware/firmware.bin)
+
+- [Untested] May resolve "NO SD" issues on Mariko (For some Samsung/Kingston cards)
+- Reboot2OFW by pressing VOL DOWN at boot
 
 ## How to update firmware w/o taking it apart
 

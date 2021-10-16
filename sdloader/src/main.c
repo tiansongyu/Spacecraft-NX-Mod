@@ -370,6 +370,14 @@ int main(void) {
     uint8_t modchip_buf[512];
 
     nx_hwinit();
+
+    /* Reboot to OFW(Normal) if only VOL_DOWN is pressed */
+    uint32_t btn = btn_read();
+    if (btn & BTN_VOL_DOWN && !(btn & BTN_VOL_UP))
+    {
+        panic(0x21); // Bypass fuse programming in package1.
+    }
+
     sdmmc_init(&emmc_sdmmc, SDMMC_4, SDMMC_VOLTAGE_1V8, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_MMC_IDENT);
 
     if (!mount_sd())
@@ -400,7 +408,11 @@ int main(void) {
         modchip_buf[0] = 0x55;
         modchip_send(&emmc_sdmmc, modchip_buf);
         if (ret == 0)
+        {
             ret = load_payload("payload.bin");
+            if (ret != 0)
+                ret = load_payload("bootloader/update.bin"); // Try loading hekate update.bin
+        }
 
         if (ret != 0)
         {

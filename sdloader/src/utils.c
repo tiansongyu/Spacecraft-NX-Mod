@@ -1,5 +1,7 @@
 /*
+ * Copyright (c) 2018 naehrwert
  * Copyright (c) 2018-2020 Atmosphère-NX
+ * Copyright (c) 2018-2020 CTCaer
  * Copyright (c) 2020 Spacecraft-NX
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -36,6 +38,20 @@ void wait(uint32_t microseconds) {
     uint32_t old_time = TIMERUS_CNTR_1US_0;
     while (TIMERUS_CNTR_1US_0 - old_time <= microseconds) {
         /* Spin-lock. */
+    }
+}
+
+__attribute__((noreturn)) void panic(uint32_t val) {
+    // Set panic code.
+    PMC(APBDEV_PMC_SCRATCH200) = val;
+    //PMC(APBDEV_PMC_CRYPTO_OP) = PMC_CRYPTO_OP_SE_DISABLE;
+    TMR(TIMER_WDT4_UNLOCK_PATTERN) = TIMER_MAGIC_PTRN;
+    TMR(TIMER_TMR9_TMR_PTV) = TIMER_EN | TIMER_PER_EN;
+    TMR(TIMER_WDT4_CONFIG)  = TIMER_SRC(9) | TIMER_PER(1) | TIMER_PMCRESET_EN;
+    TMR(TIMER_WDT4_COMMAND) = TIMER_START_CNT;
+
+    while (true) {
+        /* Wait for reboot. */
     }
 }
 
