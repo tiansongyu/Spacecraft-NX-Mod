@@ -4,6 +4,8 @@
 
 - [Untested] May resolve "NO SD" issues on Mariko (For some Samsung/Kingston cards)
 - Reboot2OFW by pressing VOL DOWN at boot
+- Put  `package3` and `stratosphere.romfs` at the root of SD card (preferably via FTP in HOS) to update Atmosphere-NX. Say farewell to the annoying procedure of entering UMS Mode, plugging into PC, replacing files, disconnecting and reboot.
+- [TODO] Reboot2Payload-like implementation (INI parser?)
 
 ## How to update firmware w/o taking it apart
 

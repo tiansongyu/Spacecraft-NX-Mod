@@ -340,6 +340,26 @@ static void modchip_recv(sdmmc_t *sdmmc, uint8_t *buf)
     sdmmc_send_cmd(sdmmc, &cmd, &req, 0);
 }
 
+static void atmosphere_update(void)
+{
+    FILINFO info;
+    const char* sd_pkg3 = "package3";
+    if (f_stat(sd_pkg3, &info) == FR_OK)
+    {
+        const char* ams_pkg3 = "atmosphere/package3";
+        f_unlink(ams_pkg3);
+        f_rename(sd_pkg3, ams_pkg3);
+    }
+
+    const char* sd_romfs = "stratosphere.romfs";
+    if (f_stat(sd_romfs, &info) == FR_OK)
+    {
+        const char* ams_romfs = "atmosphere/stratosphere.romfs";
+        f_unlink(ams_romfs);
+        f_rename(sd_romfs, ams_romfs);
+    }
+}
+
 enum DFU_ERRORS
 {
     ERROR_SUCCESS = 0x70000000,
@@ -410,6 +430,7 @@ int main(void) {
         modchip_send(&emmc_sdmmc, modchip_buf);
         if (ret == 0)
         {
+            atmosphere_update();
             ret = load_payload("payload.bin");
             if (ret != 0)
                 ret = load_payload("bootloader/update.bin"); // Try loading hekate update.bin
