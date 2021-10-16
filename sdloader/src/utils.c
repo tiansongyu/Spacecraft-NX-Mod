@@ -55,6 +55,7 @@ __attribute__((noreturn)) void panic(uint32_t val) {
     }
 }
 
+#if 0
 __attribute__((noreturn)) void watchdog_reboot(void) {
     volatile watchdog_timers_t *wdt = GET_WDT(4);
     wdt->PATTERN = WDT_REBOOT_PATTERN;
@@ -128,6 +129,7 @@ __attribute__((noinline)) bool overlaps(uint64_t as, uint64_t ae, uint64_t bs, u
         return true;
     return false;
 }
+#endif
 
 __attribute__((noreturn)) void power_off(void) {
     uint8_t val = MAX77620_ONOFFCNFG1_PWR_OFF;

@@ -837,59 +837,63 @@ int sdmmc_device_sd_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth b
     uint8_t ssr[64] = {0};
     uint8_t switch_status[512] = {0};
     
+    // Some cards (SanDisk U1), do not like a fast power cycle. Wait min 100ms.
+    // T210/T210B01 WAR: Wait exactly 239ms for IO and Controller power to discharge.
+    mdelay(239);
+
     /* Initialize our device's struct. */
     memset(device, 0, sizeof(sdmmc_device_t));
     
     /* Try to initialize the driver. */
     if (!sdmmc_init(sdmmc, SDMMC_1, SDMMC_VOLTAGE_3V3, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_SD_IDENT))
     {
-        sdmmc_error(sdmmc, "Failed to initialize the SDMMC driver!");
+        //sdmmc_error(sdmmc, "Failed to initialize the SDMMC driver!");
         return 0;
     }
     
     /* Bind the underlying driver. */
     device->sdmmc = sdmmc;
     
-    sdmmc_info(sdmmc, "SDMMC driver was successfully initialized for SD!");
+    //sdmmc_info(sdmmc, "SDMMC driver was successfully initialized for SD!");
     
     /* Apply at least 74 clock cycles. The card should be ready afterwards. */
-    udelay((74000 + sdmmc->internal_divider - 1) / sdmmc->internal_divider);
+    udelay(1000 + (74000 + sdmmc->internal_divider - 1) / sdmmc->internal_divider);
 
     /* Instruct the SD card to go idle. */
     if (!sdmmc_device_go_idle(device))
     {
-        sdmmc_error(sdmmc, "Failed to go idle!");
+        //sdmmc_error(sdmmc, "Failed to go idle!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "SD card went idle!");
+    //sdmmc_info(sdmmc, "SD card went idle!");
 
     /* Get the SD card's interface operating condition. */
     if (!sdmmc_sd_send_if_cond(device, &is_sd_ver2))
     {
-        sdmmc_error(sdmmc, "Failed to send if cond!");
+        //sdmmc_error(sdmmc, "Failed to send if cond!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Sent if cond to SD card!");
+    //sdmmc_info(sdmmc, "Sent if cond to SD card!");
 
     /* Get the SD card's operating conditions. */
     if (!sdmmc_sd_send_op_cond(device, is_sd_ver2, (bus_width == SDMMC_BUS_WIDTH_4BIT) && (bus_speed == SDMMC_SPEED_SD_SDR104)))
     {
-        sdmmc_error(sdmmc, "Failed to send op cond!");
+        //sdmmc_error(sdmmc, "Failed to send op cond!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Sent op cond to SD card!");
+    //sdmmc_info(sdmmc, "Sent op cond to SD card!");
     
     /* Get the SD card's CID. */
     if (!sdmmc_device_send_cid(device, cid))
     {
-        sdmmc_error(sdmmc, "Failed to get CID!");
+        //sdmmc_error(sdmmc, "Failed to get CID!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got CID from SD card!");
+    //sdmmc_info(sdmmc, "Got CID from SD card!");
     
     /* Decode and save the CID. */
     sdmmc_sd_decode_cid(device, cid);
@@ -897,24 +901,24 @@ int sdmmc_device_sd_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth b
     /* Get the SD card's RCA. */
     if (!sdmmc_sd_send_relative_addr(device))
     {
-        sdmmc_error(sdmmc, "Failed to get RCA!");
+        //sdmmc_error(sdmmc, "Failed to get RCA!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got RCA (0x%08x) from SD card!", device->rca);
+    //sdmmc_info(sdmmc, "Got RCA (0x%08x) from SD card!", device->rca);
 
     /* Get the SD card's CSD. */
     if (!sdmmc_device_send_csd(device, csd))
     {
-        sdmmc_error(sdmmc, "Failed to get CSD!");
+        //sdmmc_error(sdmmc, "Failed to get CSD!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got CSD from SD card!");
+    //sdmmc_info(sdmmc, "Got CSD from SD card!");
     
     /* Decode and save the CSD. */
     if (!sdmmc_sd_decode_csd(device, csd))
-        sdmmc_warn(sdmmc, "Got unknown CSD structure (0x%08x)!", device->csd.structure);
+        //sdmmc_warn(sdmmc, "Got unknown CSD structure (0x%08x)!", device->csd.structure);
     
     /* If we never switched to 1.8V, change the bus speed mode. */
     if (!device->is_180v)
@@ -922,53 +926,53 @@ int sdmmc_device_sd_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth b
         /* Reconfigure the internal clock. */
         if (!sdmmc_select_speed(device->sdmmc, SDMMC_SPEED_SD_DS))
         {
-            sdmmc_error(sdmmc, "Failed to apply the correct bus speed!");
+            //sdmmc_error(sdmmc, "Failed to apply the correct bus speed!");
             return 0;
         }
         
-        sdmmc_info(sdmmc, "Speed mode has been adjusted!");
+        //sdmmc_info(sdmmc, "Speed mode has been adjusted!");
     }
 
     /* Select the SD card. */
     if (!sdmmc_device_select_card(device))
     {
-        sdmmc_error(sdmmc, "Failed to select SD card!");
+        //sdmmc_error(sdmmc, "Failed to select SD card!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "SD card is now selected!");
+    //sdmmc_info(sdmmc, "SD card is now selected!");
 
     /* Change the SD card's block length. */
     if (!sdmmc_device_set_blocklen(device, 512))
     {
-        sdmmc_error(sdmmc, "Failed to set SD card's block length!");
+        //sdmmc_error(sdmmc, "Failed to set SD card's block length!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "SD card's block length is now 512!");
+    //sdmmc_info(sdmmc, "SD card's block length is now 512!");
 
     /* It's a good practice to disconnect the pull-up resistor with ACMD42. */
     if (!sdmmc_sd_set_clr_card_detect(device))
     {
-        sdmmc_error(sdmmc, "Failed to disconnect the pull-up resistor!");
+        //sdmmc_error(sdmmc, "Failed to disconnect the pull-up resistor!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Pull-up resistor is now disconnected!");
+    //sdmmc_info(sdmmc, "Pull-up resistor is now disconnected!");
     
     /* Get the SD card's SCR. */
     if (!sdmmc_sd_send_scr(device, scr))
     {
-        sdmmc_error(sdmmc, "Failed to get SCR!");
+        //sdmmc_error(sdmmc, "Failed to get SCR!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got SCR from SD card!");
+    //sdmmc_info(sdmmc, "Got SCR from SD card!");
 
     /* Decode and save the SCR. */
     if (!sdmmc_sd_decode_scr(device, scr))
     {
-        sdmmc_error(sdmmc, "Got unknown SCR structure!");
+        //sdmmc_error(sdmmc, "Got unknown SCR structure!");
         return 0;
     }
     
@@ -979,12 +983,12 @@ int sdmmc_device_sd_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth b
     {
         if (!sdmmc_sd_set_bus_width(device))
         {
-            sdmmc_error(sdmmc, "Failed to switch to wider bus!");
+            //sdmmc_error(sdmmc, "Failed to switch to wider bus!");
             return 0;
         }
         
         sdmmc_select_bus_width(device->sdmmc, SDMMC_BUS_WIDTH_4BIT);
-        sdmmc_info(sdmmc, "Switched to wider bus!");
+        //sdmmc_info(sdmmc, "Switched to wider bus!");
     }
 
     if (device->is_180v)
@@ -992,22 +996,22 @@ int sdmmc_device_sd_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth b
         /* Switch to high-speed from low voltage (if possible). */
         if (!sdmmc_sd_switch_hs_low(device, switch_status))
         {
-            sdmmc_error(sdmmc, "Failed to switch to high-speed from low voltage!");
+            //sdmmc_error(sdmmc, "Failed to switch to high-speed from low voltage!");
             return 0;
         }
         
-        sdmmc_info(sdmmc, "Switched to high-speed from low voltage!");
+        //sdmmc_info(sdmmc, "Switched to high-speed from low voltage!");
     }
     else if ((device->scr.sda_vsn & (SD_SCR_SPEC_VER_1 | SD_SCR_SPEC_VER_2)) && ((bus_speed != SDMMC_SPEED_SD_DS)))
     {
         /* Switch to high-speed from high voltage (if possible). */
         if (!sdmmc_sd_switch_hs_high(device, switch_status))
         {
-            sdmmc_error(sdmmc, "Failed to switch to high-speed from high voltage!");
+            //sdmmc_error(sdmmc, "Failed to switch to high-speed from high voltage!");
             return 0;
         }
         
-        sdmmc_info(sdmmc, "Switched to high-speed from high voltage!");
+        //sdmmc_info(sdmmc, "Switched to high-speed from high voltage!");
     }
 
     /* Correct any inconsistent states. */
@@ -1016,11 +1020,11 @@ int sdmmc_device_sd_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth b
     /* Get the SD card's SSR. */
     if (!sdmmc_sd_status(device, ssr))
     {
-        sdmmc_error(sdmmc, "Failed to get SSR!");
+        //sdmmc_error(sdmmc, "Failed to get SSR!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got SSR from SD card!");
+    //sdmmc_info(sdmmc, "Got SSR from SD card!");
 
     /* Decode and save the SSR. */
     sdmmc_sd_decode_ssr(device, scr);
@@ -1399,7 +1403,7 @@ int sdmmc_device_mmc_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth 
     /* Try to initialize the driver. */
     if (!sdmmc_init(sdmmc, SDMMC_4, SDMMC_VOLTAGE_1V8, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_MMC_IDENT))
     {
-        sdmmc_error(sdmmc, "Failed to initialize the SDMMC driver!");
+        //sdmmc_error(sdmmc, "Failed to initialize the SDMMC driver!");
         return 0;
     }
     
@@ -1409,7 +1413,7 @@ int sdmmc_device_mmc_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth 
     /* Set RCA. */
     device->rca = 0x01;
     
-    sdmmc_info(sdmmc, "SDMMC driver was successfully initialized for eMMC!");
+    //sdmmc_info(sdmmc, "SDMMC driver was successfully initialized for eMMC!");
     
     /* Apply at least 74 clock cycles. eMMC should be ready afterwards. */
     udelay((74000 + sdmmc->internal_divider - 1) / sdmmc->internal_divider);
@@ -1417,78 +1421,78 @@ int sdmmc_device_mmc_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth 
     /* Instruct the eMMC to go idle. */
     if (!sdmmc_device_go_idle(device))
     {
-        sdmmc_error(sdmmc, "Failed to go idle!");
+        //sdmmc_error(sdmmc, "Failed to go idle!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "eMMC went idle!");
+    //sdmmc_info(sdmmc, "eMMC went idle!");
 
     /* Get the eMMC's operating conditions. */
     if (!sdmmc_mmc_send_op_cond(device, SDMMC_VOLTAGE_1V8))
     {
-        sdmmc_error(sdmmc, "Failed to send op cond!");
+        //sdmmc_error(sdmmc, "Failed to send op cond!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Sent op cond to eMMC!");
+    //sdmmc_info(sdmmc, "Sent op cond to eMMC!");
     
     /* Get the eMMC's CID. */
     if (!sdmmc_device_send_cid(device, cid))
     {
-        sdmmc_error(sdmmc, "Failed to get CID!");
+        //sdmmc_error(sdmmc, "Failed to get CID!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got CID from eMMC!");
+    //sdmmc_info(sdmmc, "Got CID from eMMC!");
         
     /* Set the eMMC's RCA. */
     if (!sdmmc_mmc_set_relative_addr(device))
     {
-        sdmmc_error(sdmmc, "Failed to set RCA!");
+        //sdmmc_error(sdmmc, "Failed to set RCA!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "RCA is now set in eMMC!");
+    //sdmmc_info(sdmmc, "RCA is now set in eMMC!");
 
     /* Get the eMMC card's CSD. */
     if (!sdmmc_device_send_csd(device, csd))
     {
-        sdmmc_error(sdmmc, "Failed to get CSD!");
+        //sdmmc_error(sdmmc, "Failed to get CSD!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got CSD from eMMC!");
+    //sdmmc_info(sdmmc, "Got CSD from eMMC!");
 
     /* Decode and save the CSD. */
     if (!sdmmc_mmc_decode_csd(device, csd))
-        sdmmc_warn(sdmmc, "Got unknown CSD structure (0x%08x)!", device->csd.structure);
+        //sdmmc_warn(sdmmc, "Got unknown CSD structure (0x%08x)!", device->csd.structure);
 
     /* Reconfigure the internal clock. */
     if (!sdmmc_select_speed(device->sdmmc, SDMMC_SPEED_MMC_LEGACY))
     {
-        sdmmc_error(sdmmc, "Failed to apply the correct bus speed!");
+        //sdmmc_error(sdmmc, "Failed to apply the correct bus speed!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Speed mode has been adjusted!");
+    //sdmmc_info(sdmmc, "Speed mode has been adjusted!");
 
     /* Select the eMMC card. */
     if (!sdmmc_device_select_card(device))
     {
-        sdmmc_error(sdmmc, "Failed to select eMMC card!");
+        //sdmmc_error(sdmmc, "Failed to select eMMC card!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "eMMC card is now selected!");
+    //sdmmc_info(sdmmc, "eMMC card is now selected!");
 
     /* Change the eMMC's block length. */
     if (!sdmmc_device_set_blocklen(device, 512))
     {
-        sdmmc_error(sdmmc, "Failed to set eMMC's block length!");
+        //sdmmc_error(sdmmc, "Failed to set eMMC's block length!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "eMMC's block length is now 512!");
+    //sdmmc_info(sdmmc, "eMMC's block length is now 512!");
 
     /* Only specification version 4 and later support the next features. */
     if (device->csd.mmca_vsn < CSD_SPEC_VER_4)
@@ -1497,20 +1501,20 @@ int sdmmc_device_mmc_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth 
     /* Change the eMMC's bus width. */
     if (!sdmmc_mmc_select_bus_width(device, bus_width))
     {
-        sdmmc_error(sdmmc, "Failed to set eMMC's bus width!");
+        //sdmmc_error(sdmmc, "Failed to set eMMC's bus width!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "eMMC's bus width has been adjusted!");
+    //sdmmc_info(sdmmc, "eMMC's bus width has been adjusted!");
     
     /* Get the eMMC's extended CSD. */
     if (!sdmmc_mmc_send_ext_csd(device, ext_csd))
     {
-        sdmmc_error(sdmmc, "Failed to get EXT_CSD!");
+        //sdmmc_error(sdmmc, "Failed to get EXT_CSD!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Got EXT_CSD from eMMC!");
+    //sdmmc_info(sdmmc, "Got EXT_CSD from eMMC!");
     
     /* Decode and save the extended CSD. */
     sdmmc_mmc_decode_ext_csd(device, ext_csd);
@@ -1522,19 +1526,19 @@ int sdmmc_device_mmc_init(sdmmc_device_t *device, sdmmc_t *sdmmc, SdmmcBusWidth 
     if (false && device->ext_csd.bkops && !(device->ext_csd.auto_bkops_en & EXT_CSD_AUTO_BKOPS_MASK))
     {
         sdmmc_mmc_select_bkops(device);
-        sdmmc_info(sdmmc, "BKOPS is enabled!");
+        //sdmmc_info(sdmmc, "BKOPS is enabled!");
     }
     else
-        sdmmc_info(sdmmc, "BKOPS is disabled!");
+        //sdmmc_info(sdmmc, "BKOPS is disabled!");
     
     /* Switch to high speed mode. */
     if (!sdmmc_mmc_select_timing(device, bus_speed))
     {
-        sdmmc_error(sdmmc, "Failed to switch to high speed mode!");
+        //sdmmc_error(sdmmc, "Failed to switch to high speed mode!");
         return 0;
     }
     
-    sdmmc_info(sdmmc, "Switched to high speed mode!");
+    //sdmmc_info(sdmmc, "Switched to high speed mode!");
     
     /* Correct any inconsistent states. */
     sdmmc_adjust_sd_clock(sdmmc);

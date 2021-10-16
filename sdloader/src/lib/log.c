@@ -34,12 +34,14 @@ void log_to_uart(const char *message) {
     /* TODO: add UART logging */
 }
 
+#if 0
 static void print_to_screen(ScreenLogLevel screen_log_level, char *message) {
     /* don't print to screen if below log level */
     if(screen_log_level > g_screen_log_level) return;
 
     video_puts(message);
 }
+#endif
 
 /**
  * vprintk - logs a message and prints it to screen based on its screen_log_level
@@ -50,6 +52,7 @@ static void print_to_screen(ScreenLogLevel screen_log_level, char *message) {
  */
 void vprint(ScreenLogLevel screen_log_level, const char *fmt, va_list args)
 {
+#if 0
     char buf[PRINT_MESSAGE_MAX_LENGTH];
     vsnprintf(buf, PRINT_MESSAGE_MAX_LENGTH, fmt, args);
 
@@ -60,8 +63,10 @@ void vprint(ScreenLogLevel screen_log_level, const char *fmt, va_list args)
     log_to_uart(buf);
 
     print_to_screen(screen_log_level, buf);
+#endif
 }
 
+#if 0
 static void add_prefix(ScreenLogLevel screen_log_level, const char *fmt, char *buf) {
     char typebuf[] = "[%s] %s";
 
@@ -88,6 +93,7 @@ static void add_prefix(ScreenLogLevel screen_log_level, const char *fmt, char *b
             break;
     }
 }
+#endif
 
 /**
  * print - logs a message and prints it to screen based on its screen_log_level
@@ -98,6 +104,7 @@ static void add_prefix(ScreenLogLevel screen_log_level, const char *fmt, char *b
  */
 void print(ScreenLogLevel screen_log_level, const char * fmt, ...)
 {
+#if 0
     char buf[PRINT_MESSAGE_MAX_LENGTH] = {};
     char message[PRINT_MESSAGE_MAX_LENGTH] = {};
 
@@ -124,4 +131,5 @@ void print(ScreenLogLevel screen_log_level, const char * fmt, ...)
     log_to_uart(message);
 
     print_to_screen(screen_log_level, message);
+#endif
 }

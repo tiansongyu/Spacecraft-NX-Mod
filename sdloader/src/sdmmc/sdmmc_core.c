@@ -37,6 +37,7 @@ static bool is_soc_mariko() {
     return (is_mariko() != 0);
 }
 
+#if 0
 static void sdmmc_print(sdmmc_t *sdmmc, ScreenLogLevel screen_log_level, char *fmt, va_list list)
 {
     if (screen_log_level > log_get_log_level())
@@ -46,7 +47,9 @@ static void sdmmc_print(sdmmc_t *sdmmc, ScreenLogLevel screen_log_level, char *f
     vprint(screen_log_level, fmt, list);
     print(screen_log_level | SCREEN_LOG_LEVEL_NO_PREFIX, "\n");
 }
+#endif
 
+#if 0
 void sdmmc_error(sdmmc_t *sdmmc, char *fmt, ...)
 {
     va_list list;
@@ -159,6 +162,7 @@ void sdmmc_dump_regs(sdmmc_t *sdmmc)
     sdmmc_debug(sdmmc, "sdmmca_mccif_fifoctrl: 0x%08" PRIX32, sdmmc->regs->sdmmca_mccif_fifoctrl);
     sdmmc_debug(sdmmc, "timeout_wcoal_sdmmca: 0x%08" PRIX32, sdmmc->regs->timeout_wcoal_sdmmca);
 }
+#endif
 
 typedef struct {
     uint32_t clk_source_val;
@@ -564,7 +568,7 @@ static int sdmmc_autocal_config(sdmmc_t *sdmmc, SdmmcBusVoltage voltage)
                     sdmmc->regs->auto_cal_config |= (is_soc_mariko() ? SDMMC_AUTOCAL_PDPU_SDMMC1_3V3_MARIKO : SDMMC_AUTOCAL_PDPU_SDMMC1_3V3_ERISTA);;
                     break;
                 default:
-                    sdmmc_error(sdmmc, "uSD does not support requested voltage!");
+                    //sdmmc_error(sdmmc, "uSD does not support requested voltage!");
                     return 0;
             }
             
@@ -572,7 +576,7 @@ static int sdmmc_autocal_config(sdmmc_t *sdmmc, SdmmcBusVoltage voltage)
         case SDMMC_2:
         case SDMMC_4:
             if (voltage != SDMMC_VOLTAGE_1V8) {
-                sdmmc_error(sdmmc, "eMMC can only run at 1V8!");
+                //sdmmc_error(sdmmc, "eMMC can only run at 1V8!");
                 return 0;
             }
             sdmmc->regs->auto_cal_config &= ~(SDMMC_AUTOCAL_PDPU_CONFIG_MASK);
@@ -624,7 +628,7 @@ static void sdmmc_autocal_run(sdmmc_t *sdmmc, SdmmcBusVoltage voltage)
     while ((sdmmc->regs->auto_cal_status & SDMMC_AUTOCAL_ACTIVE)) {
         /* Ensure we haven't timed out. */
         if (get_time_since(timebase) > SDMMC_AUTOCAL_TIMEOUT) {
-            sdmmc_warn(sdmmc, "Auto-calibration timed out!");
+            //sdmmc_warn(sdmmc, "Auto-calibration timed out!");
             
             /* Force a register read to refresh the clock control value. */
             sdmmc_get_sd_clock_control(sdmmc);
@@ -713,7 +717,7 @@ static int sdmmc_int_clk_enable(sdmmc_t *sdmmc)
 
     /* Clock failed to stabilize. */
     if (is_timeout) {
-        sdmmc_error(sdmmc, "Clock never stabilized!");
+        //sdmmc_error(sdmmc, "Clock never stabilized!");
         return 0;
     }
 
@@ -724,7 +728,7 @@ static int sdmmc_int_clk_enable(sdmmc_t *sdmmc)
     
     /* Ensure 64bit addressing is supported. */
     if (!(sdmmc->regs->capabilities & SDHCI_CAN_64BIT)) {
-        sdmmc_error(sdmmc, "64bit addressing is unsupported!");
+        //sdmmc_error(sdmmc, "64bit addressing is unsupported!");
         return 0;
     }
     
@@ -763,8 +767,8 @@ void sdmmc_select_bus_width(sdmmc_t *sdmmc, SdmmcBusWidth width)
         sdmmc->regs->host_control |= SDHCI_CTRL_8BITBUS;
         sdmmc->bus_width = SDMMC_BUS_WIDTH_8BIT;
     }
-    else
-        sdmmc_error(sdmmc, "Invalid bus width specified!");
+    //else
+        //sdmmc_error(sdmmc, "Invalid bus width specified!");
 }
 
 void sdmmc_select_voltage(sdmmc_t *sdmmc, SdmmcBusVoltage voltage)
@@ -786,8 +790,8 @@ void sdmmc_select_voltage(sdmmc_t *sdmmc, SdmmcBusVoltage voltage)
         sdmmc->regs->power_control |= TEGRA_MMC_PWRCTL_SD_BUS_POWER;
         sdmmc->bus_voltage = SDMMC_VOLTAGE_3V3;
     }
-    else
-        sdmmc_error(sdmmc, "Invalid power state specified!");
+    //else
+        //sdmmc_error(sdmmc, "Invalid power state specified!");
 }
 
 static void sdmmc_tap_config(sdmmc_t *sdmmc, SdmmcBusSpeed bus_speed)
@@ -864,7 +868,7 @@ static int sdmmc_dllcal_run(sdmmc_t *sdmmc)
 
     /* Calibration failed. */
     if (is_timeout) {
-        sdmmc_error(sdmmc, "DLLCAL failed!");
+        //sdmmc_error(sdmmc, "DLLCAL failed!");
         return 0;
     }
     
@@ -880,7 +884,7 @@ static int sdmmc_dllcal_run(sdmmc_t *sdmmc)
 
     /* Calibration failed. */
     if (is_timeout) {
-        sdmmc_error(sdmmc, "DLLCAL failed!");
+        //sdmmc_error(sdmmc, "DLLCAL failed!");
         return 0;
     }
 
@@ -951,7 +955,7 @@ int sdmmc_select_speed(sdmmc_t *sdmmc, SdmmcBusSpeed bus_speed)
             break;
 
         default:
-            sdmmc_error(sdmmc, "Switching to unsupported speed!");
+            //sdmmc_error(sdmmc, "Switching to unsupported speed!");
             return 0;
     }
     
@@ -1146,13 +1150,13 @@ int sdmmc_init(sdmmc_t *sdmmc, SdmmcControllerNum controller, SdmmcBusVoltage bu
 {
     /* Initialize our controller structure. */
     if (!sdmmc_init_controller(sdmmc, controller)) {
-        sdmmc_error(sdmmc, "Failed to initialize SDMMC%d", controller + 1);
+        //sdmmc_error(sdmmc, "Failed to initialize SDMMC%d", controller + 1);
         return 0;
     }
     
     /* Perform initial configuration steps if necessary. */
     if (!sdmmc->sdmmc_config()) {
-        sdmmc_error(sdmmc, "Failed to configure controller!");
+        //sdmmc_error(sdmmc, "Failed to configure controller!");
         return 0;
     }
     
@@ -1205,7 +1209,7 @@ int sdmmc_init(sdmmc_t *sdmmc, SdmmcControllerNum controller, SdmmcBusVoltage bu
     
     /* Configure autocal offsets. */
     if (!sdmmc_autocal_config(sdmmc, bus_voltage)) {
-        sdmmc_error(sdmmc, "Failed to configure automatic calibration!");
+        //sdmmc_error(sdmmc, "Failed to configure automatic calibration!");
         return 0;
     }
     
@@ -1214,7 +1218,7 @@ int sdmmc_init(sdmmc_t *sdmmc, SdmmcControllerNum controller, SdmmcBusVoltage bu
     
     /* Enable the internal clock. */
     if (!sdmmc_int_clk_enable(sdmmc)) {
-        sdmmc_error(sdmmc, "Failed to enable the internal clock!");
+        //sdmmc_error(sdmmc, "Failed to enable the internal clock!");
         return 0;
     }
     
@@ -1226,7 +1230,7 @@ int sdmmc_init(sdmmc_t *sdmmc, SdmmcControllerNum controller, SdmmcBusVoltage bu
     
     /* Enable the internal clock. */
     if (!sdmmc_select_speed(sdmmc, bus_speed)) {
-        sdmmc_error(sdmmc, "Failed to apply the correct bus speed!");
+        //sdmmc_error(sdmmc, "Failed to apply the correct bus speed!");
         return 0;
     }
 
@@ -1387,7 +1391,7 @@ static int sdmmc_intr_check(sdmmc_t *sdmmc, uint16_t *status_out, uint16_t statu
 {
     uint32_t int_status = sdmmc->regs->int_status;
     
-    sdmmc_debug(sdmmc, "INTSTS: %08X", int_status);
+    //sdmmc_debug(sdmmc, "INTSTS: %08X", int_status);
     
     /* Return the status, if necessary. */
     if (status_out)
@@ -1414,7 +1418,7 @@ static int sdmmc_dma_init(sdmmc_t *sdmmc, sdmmc_request_t *req)
     /* Invalid block count or size. */
     if (!req->blksz || !req->num_blocks)
     {
-        sdmmc_error(sdmmc, "Empty DMA request!");
+        //sdmmc_error(sdmmc, "Empty DMA request!");
         return 0;
     }
     
@@ -1430,7 +1434,7 @@ static int sdmmc_dma_init(sdmmc_t *sdmmc, sdmmc_request_t *req)
     /* DMA buffer address must be aligned to 4 bytes. */
     if ((4 - (dma_base_addr & 0x03)) & 0x03)
     {
-        sdmmc_error(sdmmc, "Invalid DMA request data buffer: 0x%08X", dma_base_addr);
+        //sdmmc_error(sdmmc, "Invalid DMA request data buffer: 0x%08X", dma_base_addr);
         return 0;
     }
     
@@ -1707,7 +1711,7 @@ int sdmmc_send_cmd(sdmmc_t *sdmmc, sdmmc_command_t *cmd, sdmmc_request_t *req, u
         /* Abort in case initialization failed. */
         if (!dma_blkcnt)
         {
-            sdmmc_error(sdmmc, "Failed to initialize the DMA transfer!");
+            //sdmmc_error(sdmmc, "Failed to initialize the DMA transfer!");
             return 0;
         }
         
@@ -1725,7 +1729,7 @@ int sdmmc_send_cmd(sdmmc_t *sdmmc, sdmmc_command_t *cmd, sdmmc_request_t *req, u
     /* Wait for the CMD to finish. */
     cmd_result = sdmmc_wait_for_cmd(sdmmc);
     
-    sdmmc_debug(sdmmc, "CMD(%d): %08X, %08X, %08X, %08X", cmd_result, sdmmc->regs->response[0], sdmmc->regs->response[1], sdmmc->regs->response[2], sdmmc->regs->response[3]);
+    //sdmmc_debug(sdmmc, "CMD(%d): %08X, %08X, %08X, %08X", cmd_result, sdmmc->regs->response[0], sdmmc->regs->response[1], sdmmc->regs->response[2], sdmmc->regs->response[3]);
     
     if (cmd_result)
     {
@@ -1738,7 +1742,7 @@ int sdmmc_send_cmd(sdmmc_t *sdmmc, sdmmc_command_t *cmd, sdmmc_request_t *req, u
             /* Disable interrupts and abort in case updating failed. */
             if (!sdmmc_dma_update(sdmmc))
             {
-                sdmmc_warn(sdmmc, "Failed to update the DMA transfer!");
+                //sdmmc_warn(sdmmc, "Failed to update the DMA transfer!");
                 sdmmc_intr_disable(sdmmc);
                 return 0;
             }
@@ -1792,7 +1796,7 @@ int sdmmc_switch_voltage(sdmmc_t *sdmmc)
     /* Reconfigure the internal clock. */
     if (!sdmmc_select_speed(sdmmc, SDMMC_SPEED_SD_SDR12))
     {
-        sdmmc_error(sdmmc, "Failed to apply the correct bus speed for low voltage support!");
+        //sdmmc_error(sdmmc, "Failed to apply the correct bus speed for low voltage support!");
         return 0;
     }
     
@@ -1808,7 +1812,7 @@ int sdmmc_switch_voltage(sdmmc_t *sdmmc)
     /* Reconfigure autocal offsets. */
     if (!sdmmc_autocal_config(sdmmc, SDMMC_VOLTAGE_1V8))
     {
-        sdmmc_error(sdmmc, "Failed to configure automatic calibration for low voltage support!");
+        //sdmmc_error(sdmmc, "Failed to configure automatic calibration for low voltage support!");
         return 0;
     }
     

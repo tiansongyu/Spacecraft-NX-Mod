@@ -37,7 +37,6 @@ static void *g_framebuffer;
 static sdmmc_t emmc_sdmmc;
 
 static void setup_display(void) {
-    fuse_init();
     sdram_init();
 
     g_framebuffer = (void *) 0xC0000000;
@@ -64,7 +63,7 @@ static int load_payload(const char *path) {
 
     /* Check if the binary is present. */
     if (f_stat(path, &info) != FR_OK) {
-        print(1, "Payload not found!\n");
+        //print(1, "Payload not found!\n");
         return -2;
     }
 
@@ -75,7 +74,7 @@ static int load_payload(const char *path) {
 
     /* Try to read the binary. */
     if (read_from_file((void *)0x40021000, size, path) != size) {
-        print(SCREEN_LOG_LEVEL_WARNING, "Failed to read payload (%s)!\n", path);
+        //print(SCREEN_LOG_LEVEL_WARNING, "Failed to read payload (%s)!\n", path);
         return -2;
     }
 
@@ -370,6 +369,8 @@ int main(void) {
     uint8_t modchip_buf[512];
 
     nx_hwinit();
+
+    fuse_init();
 
     /* Reboot to OFW(Normal) if only VOL_DOWN is pressed */
     uint32_t btn = btn_read();

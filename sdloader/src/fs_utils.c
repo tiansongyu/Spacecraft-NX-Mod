@@ -48,7 +48,7 @@ bool mount_sd(void)
 
             /* Mount SD. */
             if (f_mount(&sd_fs, "", 1) == FR_OK) {
-                print(SCREEN_LOG_LEVEL_INFO, "Mounted SD card!\n");
+                //print(SCREEN_LOG_LEVEL_INFO, "Mounted SD card!\n");
                 g_sd_mounted = true;
             }
         }
