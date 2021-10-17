@@ -158,7 +158,7 @@ const char *no_bin =
     "O  OO O   O  O   O  O  O  OO\n"
     "O   O OOOOO  OOOO  OOO O   O\n"
 ;
-
+#if 0
 const char *rocket_1 =
     "      L      \n"
     "     LOL     \n"
@@ -264,7 +264,7 @@ const char *stage_cleared =
     "O*****O*****O*****OOOOO*O*O**O*****O***O\n"
     "*OOOO*OOOOO*OOOOO*O***O*O**O*OOOOO*OOOO*\n"
 ;
-
+#endif
 const char *update =
     "O***O*OOOO**OOOO****O***OOOOO*OOOOO\n"
     "O***O*O***O*O***O**O*O****O***O****\n"
@@ -288,7 +288,7 @@ const char *failed =
     "**O*****OOOOO*O*O*****O*****O***O**\n"
     "**O*****O***O*O*OOOOO*OOOOO*OOOO***\n"
 ;
-
+#if 0
 static bool is_stage_cleared()
 {
     uint32_t *fb = (uint32_t *) g_framebuffer;
@@ -301,6 +301,7 @@ static bool is_stage_cleared()
     
     return true;
 }
+#endif
 
 static void modchip_send(sdmmc_t *sdmmc, uint8_t *buf)
 {
@@ -392,17 +393,26 @@ int main(void) {
 
     fuse_init();
 
+    sdmmc_init(&emmc_sdmmc, SDMMC_4, SDMMC_VOLTAGE_1V8, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_MMC_IDENT);
+
     /* Reboot to OFW(Normal) if only VOL_DOWN is pressed */
     uint32_t btn = btn_read();
     if (btn & BTN_VOL_DOWN && !(btn & BTN_VOL_UP))
     {
+        /* Modchip enters sleep mode */
+        modchip_buf[0] = 0x55;
+        modchip_send(&emmc_sdmmc, modchip_buf);
+        mdelay(100);
+        sdmmc_finish(&emmc_sdmmc);
         panic(0x21); // Bypass fuse programming in package1.
     }
 
-    sdmmc_init(&emmc_sdmmc, SDMMC_4, SDMMC_VOLTAGE_1V8, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_MMC_IDENT);
-
     if (!mount_sd())
-        ret = -1;
+    {
+        mdelay(500);
+        if (!mount_sd())
+            ret = -1;
+    }
     
     if (ret == 0)
     {
@@ -450,48 +460,13 @@ int main(void) {
                 draw_table(big_bin, 48, 48, 37);
 
             display_backlight(true);
-            
-            const char * rockets[] = { rocket_1, rocket_2, rocket_3 };
-            
-            int idx = 0;
-            int rocket_x = 558;
-            int ball_x = 605;
-            int ball_y = -100;
-            while (!is_stage_cleared())
+
+            while (true)
             {
                 uint32_t btn = btn_read();
-                
-                if (ball_y <= -100 && btn & BTN_POWER)
-                {
-                    ball_x = rocket_x + 47;
-                    ball_y = 340;
-                }
-                else if (ball_y > -100)
-                {
-                    draw_table(ball, ball_x, ball_y, 5);
-                    ball_y -= 20;
-                }
-                
-                if (btn & BTN_VOL_DOWN)
-                    rocket_x -= 10;
-                
-                if (btn & BTN_VOL_UP)
-                    rocket_x += 10;
-                
-                if (rocket_x < -100)
-                    rocket_x = -100;
-                
-                if (rocket_x > 1180)
-                    rocket_x = 1180;
-                
-                draw_table(rockets[++idx % 3], rocket_x, 420, 15);
-                
-                mdelay(45);
+                if (btn & BTN_POWER)
+                    break;
             }
-
-            draw_table(stage_cleared, 50, 180, 30);
-            
-            mdelay(3000);
 
             display_backlight(false);
 
