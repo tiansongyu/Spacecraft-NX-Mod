@@ -2,16 +2,29 @@
 
 [Latest modded firmware.bin (v3)](https://github.com/KazushiMe/Spacecraft-NX/raw/master/firmware/firmware.bin)
 
-- [Untested] May resolve "NO SD" issues on Mariko (For some Samsung/Kingston cards)
-- Reboot2OFW by pressing VOL DOWN at boot
-- Put  `package3` and `stratosphere.romfs` at the root of SD card (preferably via FTP in HOS) to update Atmosphere-NX. Say farewell to the annoying procedure of entering UMS Mode, plugging into PC, replacing files, disconnecting and reboot.
+- Resolved "NO SD" issues on Mariko (for some Samsung/Kingston cards)
+- Boot to OFW by pressing VOL DOWN (works with/without SD card)
+
+⬆️ Above 2 features/fixes may be merged soon. [See Pull Request](https://github.com/Spacecraft-NX/sdloader/pull/2) ⬆️
+
+**Additions:**
+
+- Atmosphere-NX Updater
+  - Place `package3` and `stratosphere.romfs` in the root directory (preferably via FTP) to update at boot time, since only these 2 files cannot be replaced in HorizonOS.
+  - Say farewell to the annoying procedure of entering UMS Mode, plugging into PC, replacing files, disconnecting and reboot.
+- Add fail-safe/secondary payload support: `bootloader/update.bin` from Hekate
+- OLED-friendly "GUI": monochrome, black background color
+- Strip unused log/functions and built-in game to reduce binary size
+
 - [TODO] Reboot2Payload-like implementation (INI parser?)
 
 ## How to update firmware w/o taking it apart
 
-If you have flashed Spacecraft-NX, you could update the firmware (and its sdloader) simply by placing `firmware.bin` at the root of your SD card.
+- If you have flashed Spacecraft-NX, you could update the firmware and built-in payload(sdloader) by putting `firmware.bin` in the root of your SD card.
+- To reflash/downgrade the firmware regardless of firmware version, create a file called `.force_update`. (Windows users might find it hard to create dot files, just grab one in the repo.)
+- Some might stuck with green LED at boot. Unfortunately, the only resolution is to connect the chip with micro-USB debug port and reset it via serial interface.
 
-To reflash/downgrade the firmware regardless of firmware version, create a file called `.force_update`. (Windows users might find it hard to create dot files, you could grab one in the repo.)
+
 
 ## What is this?
 
