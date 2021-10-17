@@ -116,17 +116,9 @@ static void draw_table(const char *msg, int off_x, int off_y, int size)
             int color = 0xFFFFFF;
             switch(msg[i])
             {
-                case ' ': color = 0xBBBBBB; break;
-                case 'L': color = 0x000000; break;
-                case 'R': color = 0xFF0000; break;
-                case 'G': color = 0x00FF00; break;
-                case 'B': color = 0x0000FF; break;
-                case 'W': color = 0xFFFFFF; break;
-                case 'M': color = 0xFF00FF; break;
-                case 'Y': color = 0xFFFF00; break;
-                case 'C': color = 0x00FFFF; break;
-                case 'O': color = 0xFF4500; break;
-                case 'A': color = 0xD3D3D3; break;
+                // Only Black & White
+                case ' ': color = 0x000000; break;
+                case 'O': color = 0xFFFFFF; break;
             }
             draw_square(off_x, off_y, x, y, size, color);
         }
@@ -395,23 +387,18 @@ int main(void) {
 
     sdmmc_init(&emmc_sdmmc, SDMMC_4, SDMMC_VOLTAGE_1V8, SDMMC_BUS_WIDTH_1BIT, SDMMC_SPEED_MMC_IDENT);
 
-    /* Reboot to OFW(Normal) if only VOL_DOWN is pressed */
-    uint32_t btn = btn_read();
-    if (btn & BTN_VOL_DOWN && !(btn & BTN_VOL_UP))
-    {
-        /* Modchip enters sleep mode */
-        modchip_buf[0] = 0x55;
-        modchip_send(&emmc_sdmmc, modchip_buf);
-        mdelay(100);
-        sdmmc_finish(&emmc_sdmmc);
-        panic(0x21); // Bypass fuse programming in package1.
-    }
-
     if (!mount_sd())
     {
         mdelay(500);
         if (!mount_sd())
             ret = -1;
+    }
+
+    /* Reboot to OFW (Normal) if only VOL_DOWN is pressed */
+    uint32_t btn = btn_read();
+    if (btn & BTN_VOL_DOWN && !(btn & BTN_VOL_UP))
+    {
+        ret = 1;
     }
     
     if (ret == 0)
@@ -450,7 +437,7 @@ int main(void) {
         {
             setup_display();
 
-            memset(g_framebuffer, 0xBB, (720 + 48) * 1280 * 4);
+            memset(g_framebuffer, 0x00, (720 + 48) * 1280 * 4);
 
             if (ret == -1)
                 draw_table(no_sd, 50, 50, 50);
@@ -458,6 +445,12 @@ int main(void) {
                 draw_table(no_bin, 52, 52, 42);
             else if (ret == -3)
                 draw_table(big_bin, 48, 48, 37);
+            else if (ret == 1)
+            {
+                sdmmc_finish(&emmc_sdmmc);
+                unmount_sd();
+                panic(0x21); // Bypass fuse programming in package1.
+            }
 
             display_backlight(true);
 
@@ -479,7 +472,7 @@ int main(void) {
         modchip_send(&emmc_sdmmc, modchip_buf);
         setup_display();
 
-        memset(g_framebuffer, 0xBB, (720 + 48) * 1280 * 4);
+        memset(g_framebuffer, 0x00, (720 + 48) * 1280 * 4);
 
         display_backlight(true);
         draw_table(update, 115, 100, 30);
@@ -541,7 +534,7 @@ int main(void) {
                         if (new_progress != last_progress)
                         {
                             last_progress = new_progress;
-                            draw_square(40, 354, last_progress, 0, 12, 0xFF0000);
+                            draw_square(40, 354, last_progress, 0, 12, 0xFFFFFF);
                         }
                     }
                 }
