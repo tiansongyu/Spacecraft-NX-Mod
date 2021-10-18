@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define BOOT2OFW
+
 #include "utils.h"
 #include "hwinit.h"
 #include "di.h"
@@ -394,12 +396,14 @@ int main(void) {
             ret = -1;
     }
 
-    /* Reboot to OFW (Normal) if only VOL_DOWN is pressed */
+#ifdef BOOT2OFW
+    /* Boot to OFW (Normal) only if VOL_DOWN is pressed */
     uint32_t btn = btn_read();
     if (btn & BTN_VOL_DOWN && !(btn & BTN_VOL_UP))
     {
         ret = 1;
     }
+#endif
     
     if (ret == 0)
     {
@@ -445,12 +449,15 @@ int main(void) {
                 draw_table(no_bin, 52, 52, 42);
             else if (ret == -3)
                 draw_table(big_bin, 48, 48, 37);
+
+#ifdef BOOT2OFW
             else if (ret == 1)
             {
                 sdmmc_finish(&emmc_sdmmc);
                 unmount_sd();
                 panic(0x21); // Bypass fuse programming in package1.
             }
+#endif
 
             display_backlight(true);
 

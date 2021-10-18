@@ -3,7 +3,9 @@
 [Latest modded firmware.bin (v3)](https://github.com/KazushiMe/Spacecraft-NX/raw/master/firmware/firmware.bin)
 
 - Resolved "NO SD" issues on Mariko (for some Samsung/Kingston cards)
-- Boot to OFW by pressing VOL DOWN (works with/without SD card)
+- Boot to OFW by holding down VOL - (works with/without SD card)
+  - Usage: Hold down VOL -, then press POWER. Release VOL - when modchip LED turns off or the logo shows up. Otherwise, you may boot into Hekate menu.
+  - Optional. If you have no use of OFW, download `v3-mod-without-ofw.zip` from the release instead.
 
 ⬆️ Above 2 features/fixes may be merged soon. [See Pull Request](https://github.com/Spacecraft-NX/sdloader/pull/2) ⬆️
 
