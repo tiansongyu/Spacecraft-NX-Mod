@@ -425,6 +425,9 @@ int main(void) {
     {
         modchip_buf[0] = 0x55;
         modchip_send(&emmc_sdmmc, modchip_buf);
+
+        autohosoff();
+
         if (ret == 0)
         {
             atmosphere_update();

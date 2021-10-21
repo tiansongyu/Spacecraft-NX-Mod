@@ -147,8 +147,10 @@ __attribute__((noreturn)) void wait_for_button_and_reboot(void);
 
 __attribute__((noreturn)) void fatal_error(const char *fmt, ...);
 __attribute__((noreturn)) void power_off(void);
+__attribute__((noreturn)) void power_off_reset(void);
 __attribute__((noreturn)) void panic(uint32_t val);
 
+void autohosoff();
 int is_mariko();
 
 #endif

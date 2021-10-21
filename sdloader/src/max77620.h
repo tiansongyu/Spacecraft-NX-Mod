@@ -278,6 +278,7 @@
 #define MAX77620_ONOFFCNFG2_WD_RST_WK       (1 << 6)
 #define MAX77620_ONOFFCNFG2_SLP_LPM_MSK     (1 << 5)
 #define MAX77620_ONOFFCNFG2_WK_ALARM1       (1 << 2)
+#define MAX77620_ONOFFCNFG2_WK_ALARM2       (1 << 1)
 #define MAX77620_ONOFFCNFG2_WK_EN0      (1 << 0)
 
 #define MAX77620_GLBLM_MASK         (1 << 0)

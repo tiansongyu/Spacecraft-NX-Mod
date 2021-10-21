@@ -31,6 +31,7 @@
 #include "i2c.h"
 #include "max77620.h"
 #include "fuse.h"
+#include "fs_utils.h"
 
 #include <inttypes.h>
 
@@ -135,6 +136,56 @@ __attribute__((noreturn)) void power_off(void) {
     uint8_t val = MAX77620_ONOFFCNFG1_PWR_OFF;
     i2c_send(I2C_5, MAX77620_PWR_I2C_ADDR, MAX77620_REG_ONOFFCNFG1, &val, 1);
     while (1);
+}
+
+__attribute__((noreturn)) void power_off_reset(void) {
+    // Enable/Disable soft reset wake event.
+    uint32_t reg;
+    i2c_query(I2C_5, MAX77620_PWR_I2C_ADDR, MAX77620_REG_ONOFFCNFG2, &reg, 1);
+    // Do not wake up after power off.
+    reg &= ~(MAX77620_ONOFFCNFG2_SFT_RST_WK | MAX77620_ONOFFCNFG2_WK_ALARM1 | MAX77620_ONOFFCNFG2_WK_ALARM2);
+    i2c_send(I2C_5, MAX77620_PWR_I2C_ADDR, MAX77620_REG_ONOFFCNFG2, &reg, 1);
+
+    power_off();
+}
+
+#define MAX77620_RTC_UPDATE0_REG    0x04
+#define  MAX77620_RTC_WRITE_UPDATE  BIT(0)
+#define  MAX77620_RTC_READ_UPDATE   BIT(4)
+#define MAX77620_RTC_NR_TIME_REGS   7
+#define MAX77620_ALARM1_SEC_REG     0x0E
+#define  MAX77620_RTC_ALARM_EN_MASK BIT(7)
+
+void max77620_rtc_stop_alarm(void)
+{
+    uint8_t val = MAX77620_RTC_READ_UPDATE;
+
+    // Update RTC regs from RTC clock.
+    i2c_send(I2C_5, MAX77620_RTC_I2C_ADDR, MAX77620_RTC_UPDATE0_REG, &val, 1);
+
+    // Stop alarm for both ALARM1 and ALARM2. Horizon uses ALARM2.
+    for (int i = 0; i < (MAX77620_RTC_NR_TIME_REGS * 2); i++)
+    {
+        i2c_query(I2C_5, MAX77620_RTC_I2C_ADDR, MAX77620_ALARM1_SEC_REG + i, &val, 1);
+        val &= ~MAX77620_RTC_ALARM_EN_MASK;
+        i2c_send(I2C_5, MAX77620_RTC_I2C_ADDR, MAX77620_ALARM1_SEC_REG + i, &val, 1);
+    }
+
+    // Update RTC clock from RTC regs.
+    val = MAX77620_RTC_WRITE_UPDATE;
+    i2c_send(I2C_5, MAX77620_RTC_I2C_ADDR, MAX77620_RTC_UPDATE0_REG, &val, 1);
+}
+
+void autohosoff(void)
+{
+    uint32_t hosWakeup;
+    i2c_query(I2C_5, MAX77620_PWR_I2C_ADDR, MAX77620_REG_IRQTOP, &hosWakeup, 1);
+    if (hosWakeup & MAX77620_IRQ_TOP_RTC_MASK)
+    {
+        unmount_sd();
+        max77620_rtc_stop_alarm();
+        power_off_reset();
+    }
 }
 
 #define SE_CTX_SAVE_AUTO ((volatile uint32_t) 0x70012074)
