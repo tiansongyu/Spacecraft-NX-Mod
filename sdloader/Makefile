@@ -36,7 +36,6 @@ CFLAGS	:= \
 	-ffunction-sections \
 	-fdata-sections \
 	-std=gnu11 \
-	-Werror \
 	-Wall \
 	-fstrict-volatile-bitfields \
 	-Wl,--gc-sections \

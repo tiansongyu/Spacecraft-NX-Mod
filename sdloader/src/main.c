@@ -129,11 +129,10 @@ static void draw_table(const char *msg, int off_x, int off_y, int size)
 
 const char *no_sd =
     "O   O OOOOO  OOOOO OOOO \n"
-    "OO  O O   O  O     O   O\n"
-    "O O O O   O  OOOOO O   O\n"
-    "O  OO O   O      O O   O\n"
-    "O   O OOOOO  OOOOO OOOO \n"
-;
+    "OOOOOOOOOOOOOOOOOOOOOOOO\n"
+    "OOOOOOOOOOOOOOOOOOOOOOOO\n"
+    "OOOOOOOOOOOOOOOOOOOOOOOO\n"
+    "O   O OOOOO  OOOOO OOOO \n";
 
 const char *big_bin =
     "OOOO  OOO OOOOO  OOOO  OOO O   O\n"
