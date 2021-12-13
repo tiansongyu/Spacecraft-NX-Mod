@@ -29,7 +29,6 @@
 #include "fuse.h"
 #include "sdram.h"
 #include "sdmmc/mmc.h"
-
 extern void (*__program_exit_callback)(int rc);
 
 static void *g_framebuffer;
@@ -84,6 +83,34 @@ static int load_payload(const char *path) {
     return 0;
 }
 
+#define WIDTH 1280
+#define HEIGHT 720
+
+static void draw_pic(char img[], int img_width,
+                     int img_height, int posX, int posY) 
+{
+    char *fb;
+    int i, j, k, vr, hr, ofs = 0;
+    fb = (char *)g_framebuffer;
+    vr = HEIGHT;
+    hr = WIDTH;
+    fb += hr * posY * 4 + posX * 4;
+    for (i = 0; i < vr; i++)
+    {
+        if (i >= img_height)
+            break;
+        for (j = 0; j < hr; j++)
+        {
+            if (j >= img_width)
+            {
+                fb += (hr - img_width) * 4;
+                break;
+            }
+            for (k = 0; k < 4; k++)
+                *fb++ = img[ofs++];
+        }
+    }
+}
 static void draw_square(int off_x, int off_y, int x, int y, int multi, int color)
 {
     int start_x = off_x + (x * multi);
